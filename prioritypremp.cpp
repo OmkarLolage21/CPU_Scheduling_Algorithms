@@ -1,138 +1,146 @@
 #include <iostream>
-#include <limits>
+#include <limits.h>
 using namespace std;
 
-class Process
+struct Process
 {
-public:
-    string processName;
+    int id;
     int arrivalTime;
     int burstTime;
     int priority;
-
     int remainingTime;
-
-    int responseTime;
     int completionTime;
-
+    int turnaroundTime;
+    int responseTime;
     int waitingTime;
-    int turnAroundTime;
-
-    void initialize()
-    {
-        remainingTime = burstTime;
-    }
 };
 
-int main()
+void sortByPriority(Process processes[], int n)
 {
-    int numOfProcesses;
-    cout << "Enter no. of processes: ";
-    cin >> numOfProcesses;
-
-    Process processes[numOfProcesses];
-
-    for (int n = 0; n < numOfProcesses; n++)
+    for (int i = 0; i < n - 1; i++)
     {
-        cout << "\nEnter Process Name for " << (n + 1) << ": ";
-        cin >> processes[n].processName;
-        cout << "Enter Arrival Time for Process " << (n + 1) << ": ";
-        cin >> processes[n].arrivalTime;
-        cout << "Enter Burst Time for Process " << (n + 1) << ": ";
-        cin >> processes[n].burstTime;
-        cout << "Enter Priority for Process " << (n + 1) << ": ";
-        cin >> processes[n].priority;
-
-        processes[n].initialize();
-    }
-
-    cout << "\n"
-         << endl;
-
-    for (int i = 0; i < numOfProcesses - 1; i++)
-    {
-        for (int j = i + 1; j < numOfProcesses; j++)
+        for (int j = 0; j < n - i - 1; j++)
         {
-            if (processes[j].arrivalTime < processes[i].arrivalTime)
+            if (processes[j].priority < processes[j + 1].priority)
             {
-                Process temp = processes[j];
-                processes[j] = processes[i];
-                processes[i] = temp;
+                swap(processes[j], processes[j + 1]);
+            }
+        }
+    }
+}
+
+int findProcessWithHighestPriority(Process processes[], int n, int currentTime)
+{
+    int highestPriorityIndex = -1;
+    int highestPriority = INT_MIN;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0)
+        {
+            if (processes[i].priority > highestPriority)
+            {
+                highestPriority = processes[i].priority;
+                highestPriorityIndex = i;
             }
         }
     }
 
+    return highestPriorityIndex;
+}
+
+void preemptivePriorityScheduling(Process processes[], int n)
+{
     int currentTime = 0;
 
     while (true)
     {
+        int processIndex = findProcessWithHighestPriority(processes, n, currentTime);
 
-        int currentHighestPriorityIndex = -1;
-        int currentHighestPriority = numeric_limits<int>::max();
-
-        bool isAllCompleted = true;
-
-        for (int i = 0; i < numOfProcesses; i++)
+        if (processIndex == -1)
         {
-            if (processes[i].remainingTime > 0)
+            // No processes are ready to execute
+            currentTime++;
+        }
+        else
+        {
+            // Execute the process with the highest priority
+            processes[processIndex].remainingTime--;
+
+            if (processes[processIndex].responseTime == -1)
             {
-                isAllCompleted = false;
-                if (processes[i].arrivalTime <= currentTime)
-                {
-                    if (processes[i].priority < currentHighestPriority)
-                    {
-                        currentHighestPriority = processes[i].priority;
-                        currentHighestPriorityIndex = i;
-                    }
-                }
+                processes[processIndex].responseTime = currentTime - processes[processIndex].arrivalTime;
+            }
+
+            currentTime++;
+
+            if (processes[processIndex].remainingTime == 0)
+            {
+                // Process is completed
+                processes[processIndex].completionTime = currentTime;
+                processes[processIndex].turnaroundTime = processes[processIndex].completionTime - processes[processIndex].arrivalTime;
+                processes[processIndex].waitingTime = processes[processIndex].turnaroundTime - processes[processIndex].burstTime;
+
+                cout << "| " << processes[processIndex].id << "\t| " << processes[processIndex].arrivalTime << "\t| "
+                     << processes[processIndex].burstTime << "\t| " << processes[processIndex].completionTime << "\t| "
+                     << processes[processIndex].turnaroundTime << "\t| " << processes[processIndex].responseTime << "\t| "
+                     << processes[processIndex].waitingTime << "\t|" << endl;
             }
         }
 
-        if (isAllCompleted)
+        bool allProcessesCompleted = true;
+        for (int i = 0; i < n; i++)
+        {
+            if (processes[i].remainingTime > 0)
+            {
+                allProcessesCompleted = false;
+                break;
+            }
+        }
+
+        if (allProcessesCompleted)
         {
             break;
         }
-
-        if (processes[currentHighestPriorityIndex].remainingTime == processes[currentHighestPriorityIndex].burstTime)
-        {
-            processes[currentHighestPriorityIndex].responseTime = currentTime;
-        }
-
-        processes[currentHighestPriorityIndex].remainingTime--;
-        currentTime++;
-
-        if (processes[currentHighestPriorityIndex].remainingTime == 0)
-        {
-            processes[currentHighestPriorityIndex].completionTime = currentTime;
-        }
     }
+}
 
-    int sumResponseTime = 0;
-    int sumCompletionTime = 0;
-    int sumWaitingTime = 0;
-    int sumTurnAroundTime = 0;
+int main()
+{
+    int n;
 
-    for (int n = 0; n < numOfProcesses; n++)
+    cout << "Enter the number of processes: ";
+    cin >> n;
+
+    Process processes[n];
+
+    // Input process details
+    for (int i = 0; i < n; i++)
     {
-        cout << "\nProcess " << processes[n].processName << ":\n";
-        cout << "Response Time: " << processes[n].responseTime << endl;
-        cout << "Completion Time: " << processes[n].completionTime << endl;
-        processes[n].turnAroundTime = processes[n].completionTime - processes[n].arrivalTime;
-        processes[n].waitingTime = processes[n].turnAroundTime - processes[n].burstTime;
-        cout << "Waiting Time: " << processes[n].waitingTime << endl;
-        cout << "Turn Around Time: " << processes[n].turnAroundTime << "\n"
-             << endl;
+        processes[i].id = i + 1;
+        cout << "Enter arrival time for process " << i + 1 << ": ";
+        cin >> processes[i].arrivalTime;
+        cout << "Enter burst time for process " << i + 1 << ": ";
+        cin >> processes[i].burstTime;
+        cout << "Enter priority for process " << i + 1 << ": ";
+        cin >> processes[i].priority;
 
-        sumResponseTime += processes[n].responseTime;
-        sumCompletionTime += processes[n].completionTime;
-        sumWaitingTime += processes[n].waitingTime;
-        sumTurnAroundTime += processes[n].turnAroundTime;
+        processes[i].remainingTime = processes[i].burstTime;
+        processes[i].completionTime = 0;
+        processes[i].turnaroundTime = 0;
+        processes[i].responseTime = -1;
+        processes[i].waitingTime = 0;
     }
 
-    cout << "\n\nAverage Response Time for " << (numOfProcesses) << " Processes: " << (float)sumResponseTime / numOfProcesses;
-    cout << "\n\nAverage Completion Time for " << (numOfProcesses) << " Processes: " << (float)sumCompletionTime / numOfProcesses;
-    cout << "\n\nAverage Waiting Time for " << (numOfProcesses) << " Processes: " << (float)sumWaitingTime / numOfProcesses;
-    cout << "\n\nAverage Turn Around Time for " << (numOfProcesses) << " Processes: " << (float)sumTurnAroundTime / numOfProcesses;
+    // Sort processes by priority
+    sortByPriority(processes, n);
+
+    // Display table headers
+    cout << "| PID\t| Arrival Time\t| Burst Time\t| Completion Time\t| Turnaround Time\t| Response Time\t| Waiting Time\t|" << endl;
+    cout << "--------------------------------------------------------------------------------------------" << endl;
+
+    // Run preemptive priority scheduling algorithm
+    preemptivePriorityScheduling(processes, n);
 
     return 0;
 }
