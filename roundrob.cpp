@@ -1,6 +1,3 @@
-// C++ Program for implementing
-// Round Robin Algorithm
-// code by sparsh_cbs
 #include <iostream>
 
 using namespace std;
@@ -45,8 +42,6 @@ void checkNewArrival(int timer, int arrival[], int n, int maxProccessIndex, int 
                 }
             }
         }
-        // adds the incoming process to the ready queue
-        //(if any arrives)
         if (newArrival)
             queueUpdation(queue, timer, arrival, n, maxProccessIndex);
     }
@@ -76,11 +71,11 @@ int main()
     }
 
     for (int i = 0; i < n; i++)
-    { // Initializing the queue and complete array
+    {
         complete[i] = false;
         queue[i] = 0;
     }
-    while (timer < arrival[0]) // Incrementing Timer until the first process arrives
+    while (timer < arrival[0])
         timer++;
     queue[0] = 1;
 
@@ -106,20 +101,13 @@ int main()
                 temp_burst[queue[0] - 1] -= 1;
                 timer += 1;
                 ctr++;
-
-                // Checking and Updating the ready queue until all the processes arrive
                 checkNewArrival(timer, arrival, n, maxProccessIndex, queue);
             }
-            // If a process is completed then store its exit time
-            // and mark it as completed
             if ((temp_burst[queue[0] - 1] == 0) && (complete[queue[0] - 1] == false))
             {
-                // turn array currently stores the completion time
                 turn[queue[0] - 1] = timer;
                 complete[queue[0] - 1] = true;
             }
-
-            // checks whether or not CPU is idle
             bool idle = true;
             if (queue[n - 1] == 0)
             {
@@ -139,9 +127,6 @@ int main()
                 timer++;
                 checkNewArrival(timer, arrival, n, maxProccessIndex, queue);
             }
-
-            // Maintaining the entries of processes
-            // after each premption in the ready Queue
             queueMaintainence(queue, n);
         }
     }

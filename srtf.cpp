@@ -12,6 +12,8 @@ struct Process
     int completionTime;
     int WaitingTime;
     int TAtime;
+    int RespTime;
+    int fs = -1;
 };
 
 bool compareArrivalTime(const Process &p1, const Process &p2)
@@ -21,7 +23,7 @@ bool compareArrivalTime(const Process &p1, const Process &p2)
 
 int main()
 {
-    int n; // Number of processes
+    int n;
     cout << "Enter the number of processes: ";
     cin >> n;
 
@@ -67,6 +69,10 @@ int main()
         {
             processes[shortestProcess].remainingTime--;
             cout << "  P" << processes[shortestProcess].id << "  | ";
+            if (processes[shortestProcess].fs == -1)
+            {
+                processes[shortestProcess].fs = currentTime;
+            }
             currentTime++;
             if (processes[shortestProcess].remainingTime == 0)
             {
@@ -79,6 +85,7 @@ int main()
     {
         processes[j].TAtime = processes[j].completionTime - processes[j].arrivalTime;
         processes[j].WaitingTime = processes[j].TAtime - processes[j].burstTime;
+        processes[j].RespTime = processes[j].fs - processes[j].arrivalTime;
         j++;
     }
     cout << "\n";
@@ -90,10 +97,10 @@ int main()
         i++;
     }
 
-    cout << "\n\nProcess\t  Arrival Time\t  Burst Time\tCompletion Time\t\tAT\tWT\n";
+    cout << "\n\nProcess\t  Arrival Time\t  Burst Time\tCompletion Time\t\tAT\tWT\tRT\n";
     for (int i = 0; i < n; i++)
     {
-        cout << "P" << processes[i].id << "\t\t " << processes[i].arrivalTime << "\t\t" << processes[i].burstTime << "\t\t" << processes[i].completionTime << "\t\t" << processes[i].TAtime << "\t" << processes[i].WaitingTime << endl;
+        cout << "P" << processes[i].id << "\t\t " << processes[i].arrivalTime << "\t\t" << processes[i].burstTime << "\t\t" << processes[i].completionTime << "\t\t" << processes[i].TAtime << "\t" << processes[i].WaitingTime << "\t" << processes[i].RespTime << endl;
     }
 
     return 0;

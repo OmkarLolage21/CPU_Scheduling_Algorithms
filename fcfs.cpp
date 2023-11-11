@@ -79,7 +79,6 @@ void Process::sort(Process *p, int n)
         }
     }
 }
-// display function
 void Process::show(Process *p, int n)
 {
     cout << "Process\tArrival\tBurst\tCompletion\tTurn Around\tWaiting\n";

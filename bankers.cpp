@@ -2,11 +2,34 @@
 
 using namespace std;
 
+void displayTable(int n, int m, int allocation[][100], int maximum[][100], int need[][100])
+{
+    cout << "\nProcess ID\tAllocated\tMaximum\t\tNeeded" << endl;
+    for (int i = 0; i < n; i++)
+    {
+        cout << "P" << i << "\t\t";
+        for (int j = 0; j < m; j++)
+        {
+            cout << allocation[i][j] << " ";
+        }
+        cout << "\t\t";
+        for (int j = 0; j < m; j++)
+        {
+            cout << maximum[i][j] << " ";
+        }
+        cout << "\t\t";
+        for (int j = 0; j < m; j++)
+        {
+            cout << need[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
 bool isSafe(int available[], int maximum[][100], int allocation[][100], int n, int m)
 {
     int need[100][100];
 
-    // Calculate the need matrix
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < m; j++)
@@ -19,7 +42,6 @@ bool isSafe(int available[], int maximum[][100], int allocation[][100], int n, i
     int safeSequence[100];
     int work[100];
 
-    // Initialize work with available resources
     for (int i = 0; i < m; i++)
     {
         work[i] = available[i];
@@ -61,13 +83,11 @@ bool isSafe(int available[], int maximum[][100], int allocation[][100], int n, i
 
         if (!found)
         {
-            // If no process can be allocated, the system is in an unsafe state
             return false;
         }
     }
-
-    // If all processes have been allocated, the system is in a safe state
-    cout << "Safe Sequence: ";
+    displayTable(n, m, allocation, maximum, need);
+    cout << "\nSafe Sequence: ";
     for (int i = 0; i < n; i++)
     {
         cout << "P" << safeSequence[i];
@@ -77,13 +97,12 @@ bool isSafe(int available[], int maximum[][100], int allocation[][100], int n, i
         }
     }
     cout << endl;
-
     return true;
 }
 
 int main()
 {
-    int n, m; // Number of processes and resources
+    int n, m;
     cout << "Enter the number of processes: ";
     cin >> n;
     cout << "Enter the number of resources: ";
