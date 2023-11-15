@@ -41,7 +41,6 @@ int main()
         cin >> processes[i].bt;
         processes[i].rt = processes[i].bt;
     }
-    // Sort processes by arrival time
     sortProcessesByArrivalTime(processes, n);
 
     int current_time = 0;
@@ -84,7 +83,7 @@ int main()
     cout << "\n\nProcess\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time\n";
     for (int i = 0; i < n; i++)
     {
-        int index = sequence[i] - 1; // Get the index of the process based on scheduling sequence
+        int index = sequence[i] - 1;
         cout << "P" << processes[index].id << "\t" << processes[index].at << "\t\t" << processes[index].bt << "\t\t"
              << processes[index].ct << "\t\t" << processes[index].tat << "\t\t" << processes[index].wat << "\n";
     }

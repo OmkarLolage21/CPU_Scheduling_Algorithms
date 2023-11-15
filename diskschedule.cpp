@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <iostream>
 using namespace std;
 
 int FCFS(int reqNum, int head, int *req);
@@ -207,8 +208,8 @@ int SCAN(int reqNum, int head, int *req)
         }
     }
 
-    cout << "\nThe Seek Distance for selected algorithm is: " << seekTime;
-    cout << "\nThe Average Seek Distance for selected algorithm is: " << seekTime / reqNum;
+    cout << "\nThe Seek Distance for the selected algorithm is: " << seekTime;
+    cout << "\nThe Average Seek Distance for the selected algorithm is: " << seekTime / reqNum;
     return seekTime;
 }
 int CSCAN(int reqNum, int head, int *req)
