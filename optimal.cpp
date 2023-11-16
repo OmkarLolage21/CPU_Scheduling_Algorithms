@@ -1,5 +1,8 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+
 using namespace std;
+
 bool search(int key, vector<int> &fr)
 {
     for (int i = 0; i < fr.size(); i++)
@@ -7,6 +10,7 @@ bool search(int key, vector<int> &fr)
             return true;
     return false;
 }
+
 int predict(int pg[], vector<int> &fr, int pn, int index)
 {
     int res = -1, farthest = index;
@@ -31,33 +35,76 @@ int predict(int pg[], vector<int> &fr, int pn, int index)
     return (res == -1) ? 0 : res;
 }
 
+void printFrames(vector<int> &fr)
+{
+    for (int i = 0; i < fr.size(); i++)
+    {
+        if (fr[i] == -1)
+            cout << "- ";
+        else
+            cout << fr[i] << " ";
+    }
+}
+
 void optimalPage(int pg[], int pn, int fn)
 {
-    vector<int> fr;
+    vector<int> fr(fn, -1); // Initialize frames with -1
     int hit = 0;
+    char result;
+
+    cout << "Page String\tFrames\t\tHit/Miss\n";
+
     for (int i = 0; i < pn; i++)
     {
+        cout << pg[i] << "\t\t";
+
         if (search(pg[i], fr))
         {
             hit++;
-            continue;
+            result = 'H';
         }
-        if (fr.size() < fn)
-            fr.push_back(pg[i]);
         else
         {
-            int j = predict(pg, fr, pn, i + 1);
-            fr[j] = pg[i];
+            if (fr[fr.size() - 1] == -1)
+            {
+                fr[fr.size() - 1] = pg[i];
+                result = 'M';
+            }
+            else
+            {
+                int j = predict(pg, fr, pn, i + 1);
+                result = 'M';
+                fr[j] = pg[i];
+            }
         }
+
+        printFrames(fr);
+        cout << "\t\t" << result << endl;
     }
+
     cout << "No. of hits = " << hit << endl;
     cout << "No. of misses = " << pn - hit << endl;
 }
+
 int main()
 {
-    int pg[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2};
-    int pn = sizeof(pg) / sizeof(pg[0]);
-    int fn = 4;
+    int pn, fn;
+
+    cout << "Enter the number of page references: ";
+    cin >> pn;
+
+    int pg[pn];
+
+    cout << "Enter the page reference string: ";
+    for (int i = 0; i < pn; i++)
+    {
+        cin >> pg[i];
+    }
+
+    cout << "Enter the number of frames: ";
+    cin >> fn;
+
     optimalPage(pg, pn, fn);
+
     return 0;
 }
