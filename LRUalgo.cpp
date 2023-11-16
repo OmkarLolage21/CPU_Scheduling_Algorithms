@@ -1,24 +1,53 @@
-#include <bits/stdc++.h>
-using namespace std;
-int pageFaults(int pages[], int n, int capacity)
+#include <iostream>
+#include <unordered_set>
+#include <unordered_map>
+#include <climits>
+
+void displayCacheHeader()
 {
-    unordered_set<int> s;
-    unordered_map<int, int> indexes;
-    int page_faults = 0;
-    for (int i = 0; i < n; i++)
+    std::cout << "Cache\tHit/Miss\n";
+}
+
+void displayCache(std::unordered_set<int> &s, int page, bool isHit, bool displayHeader)
+{
+    if (displayHeader)
     {
-        if (s.size() < capacity)
+        displayCacheHeader();
+    }
+
+    for (int p : s)
+    {
+        std::cout << p << "\t";
+        if (p == page && isHit)
         {
-            if (s.find(pages[i]) == s.end())
-            {
-                s.insert(pages[i]);
-                page_faults++;
-            }
-            indexes[pages[i]] = i;
+            std::cout << "Hit";
         }
         else
         {
-            if (s.find(pages[i]) == s.end())
+            std::cout << "Miss";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+int pageFaults(int pages[], int n, int capacity)
+{
+    std::unordered_set<int> s;
+    std::unordered_map<int, int> indexes;
+    int page_faults = 0;
+
+    bool displayHeader = true;
+
+    for (int i = 0; i < n; i++)
+    {
+        std::cout << "Page " << pages[i] << " - \n";
+
+        bool isHit = (s.find(pages[i]) != s.end());
+
+        if (!isHit)
+        {
+            if (s.size() == capacity)
             {
                 int lru = INT_MAX, val;
                 for (auto it = s.begin(); it != s.end(); it++)
@@ -30,20 +59,38 @@ int pageFaults(int pages[], int n, int capacity)
                     }
                 }
                 s.erase(val);
-                s.insert(pages[i]);
-                page_faults++;
             }
-            indexes[pages[i]] = i;
+            s.insert(pages[i]);
+            page_faults++;
         }
+        displayCache(s, pages[i], isHit, displayHeader);
+        displayHeader = false;
+        indexes[pages[i]] = i;
     }
 
     return page_faults;
 }
+
 int main()
 {
-    int pages[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2};
-    int n = sizeof(pages) / sizeof(pages[0]);
-    int capacity = 4;
-    cout << pageFaults(pages, n, capacity);
+    int n;
+
+    std::cout << "Enter the number of pages: ";
+    std::cin >> n;
+
+    int pages[n];
+
+    std::cout << "Enter the page references:" << std::endl;
+    for (int i = 0; i < n; i++)
+    {
+        std::cin >> pages[i];
+    }
+
+    int capacity;
+    std::cout << "Enter the capacity of the cache: ";
+    std::cin >> capacity;
+
+    std::cout << "Page Faults: " << pageFaults(pages, n, capacity) << std::endl;
+
     return 0;
 }
