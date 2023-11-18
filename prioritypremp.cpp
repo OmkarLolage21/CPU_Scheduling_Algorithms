@@ -1,146 +1,117 @@
 #include <iostream>
+#include <algorithm>
 #include <limits.h>
 using namespace std;
 
-struct Process
+#define totalprocess 5
+
+struct process
 {
-    int id;
-    int arrivalTime;
-    int burstTime;
-    int priority;
-    int remainingTime;
-    int completionTime;
-    int turnaroundTime;
-    int responseTime;
-    int waitingTime;
+    int at, bt, pr, pno;
 };
 
-void sortByPriority(Process processes[], int n)
+process proc[50];
+
+bool comp(process a, process b)
 {
-    for (int i = 0; i < n - 1; i++)
+    if (a.at == b.at)
     {
-        for (int j = 0; j < n - i - 1; j++)
+        return a.pr < b.pr;
+    }
+    else
+    {
+        return a.at < b.at;
+    }
+}
+void get_wt_time(int wt[])
+{
+    int service[50];
+    service[0] = proc[0].at;
+    wt[0] = 0;
+
+    for (int i = 1; i < totalprocess; i++)
+    {
+        service[i] = proc[i - 1].bt + service[i - 1];
+
+        wt[i] = service[i] - proc[i].at;
+
+        if (wt[i] < 0)
         {
-            if (processes[j].priority < processes[j + 1].priority)
-            {
-                swap(processes[j], processes[j + 1]);
-            }
+            wt[i] = 0;
         }
     }
 }
 
-int findProcessWithHighestPriority(Process processes[], int n, int currentTime)
+void get_tat_time(int tat[], int wt[])
 {
-    int highestPriorityIndex = -1;
-    int highestPriority = INT_MIN;
 
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < totalprocess; i++)
     {
-        if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0)
-        {
-            if (processes[i].priority > highestPriority)
-            {
-                highestPriority = processes[i].priority;
-                highestPriorityIndex = i;
-            }
-        }
+        tat[i] = proc[i].bt + wt[i];
     }
-
-    return highestPriorityIndex;
 }
 
-void preemptivePriorityScheduling(Process processes[], int n)
+void findgc()
 {
-    int currentTime = 0;
+    int wt[50], tat[50];
 
-    while (true)
+    double wavg = 0, tavg = 0;
+
+    get_wt_time(wt);
+    get_tat_time(tat, wt);
+
+    int stime[50], ctime[50];
+
+    stime[0] = proc[0].at;
+    ctime[0] = stime[0] + tat[0];
+
+    for (int i = 1; i < totalprocess; i++)
     {
-        int processIndex = findProcessWithHighestPriority(processes, n, currentTime);
-
-        if (processIndex == -1)
-        {
-            // No processes are ready to execute
-            currentTime++;
-        }
-        else
-        {
-            // Execute the process with the highest priority
-            processes[processIndex].remainingTime--;
-
-            if (processes[processIndex].responseTime == -1)
-            {
-                processes[processIndex].responseTime = currentTime - processes[processIndex].arrivalTime;
-            }
-
-            currentTime++;
-
-            if (processes[processIndex].remainingTime == 0)
-            {
-                // Process is completed
-                processes[processIndex].completionTime = currentTime;
-                processes[processIndex].turnaroundTime = processes[processIndex].completionTime - processes[processIndex].arrivalTime;
-                processes[processIndex].waitingTime = processes[processIndex].turnaroundTime - processes[processIndex].burstTime;
-
-                cout << "| " << processes[processIndex].id << "\t| " << processes[processIndex].arrivalTime << "\t| "
-                     << processes[processIndex].burstTime << "\t| " << processes[processIndex].completionTime << "\t| "
-                     << processes[processIndex].turnaroundTime << "\t| " << processes[processIndex].responseTime << "\t| "
-                     << processes[processIndex].waitingTime << "\t|" << endl;
-            }
-        }
-
-        bool allProcessesCompleted = true;
-        for (int i = 0; i < n; i++)
-        {
-            if (processes[i].remainingTime > 0)
-            {
-                allProcessesCompleted = false;
-                break;
-            }
-        }
-
-        if (allProcessesCompleted)
-        {
-            break;
-        }
+        stime[i] = ctime[i - 1];
+        ctime[i] = stime[i] + tat[i] - wt[i];
     }
+
+    cout << "Process_no\tArrival\t\tBurst\t  Complete_time\tTurn_Around_Time\tWaiting_Time\t\tPriority" << endl;
+
+    for (int i = 0; i < totalprocess; i++)
+    {
+        wavg += wt[i];
+        tavg += tat[i];
+
+        cout << proc[i].pno << "\t\t" << proc[i].at << "\t\t" << proc[i].bt << "\t\t" << ctime[i] << "\t\t" << tat[i] << "\t\t\t" << wt[i] << "\t\t\t" << proc[i].pr << endl;
+    }
+
+    cout << "Average waiting time is : ";
+    cout << wavg / (float)totalprocess << endl;
+    cout << "average turnaround time : ";
+    cout << tavg / (float)totalprocess << endl;
 }
 
 int main()
 {
-    int n;
+    int arrivaltime[] = {1, 2, 3, 4, 5};
+    int bursttime[] = {3, 5, 1, 7, 4};
+    int priority[] = {3, 4, 1, 7, 8};
 
-    cout << "Enter the number of processes: ";
-    cin >> n;
-
-    Process processes[n];
-
-    // Input process details
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < totalprocess; i++)
     {
-        processes[i].id = i + 1;
-        cout << "Enter arrival time for process " << i + 1 << ": ";
-        cin >> processes[i].arrivalTime;
-        cout << "Enter burst time for process " << i + 1 << ": ";
-        cin >> processes[i].burstTime;
-        cout << "Enter priority for process " << i + 1 << ": ";
-        cin >> processes[i].priority;
-
-        processes[i].remainingTime = processes[i].burstTime;
-        processes[i].completionTime = 0;
-        processes[i].turnaroundTime = 0;
-        processes[i].responseTime = -1;
-        processes[i].waitingTime = 0;
+        proc[i].pno = i + 1;
+        cout << "Enter arrival time for Process " << i + 1 << ": ";
+        cin >> proc[i].at;
+        cout << "Enter burst time for Process " << i + 1 << ": ";
+        cin >> proc[i].bt;
+        cout << "Enter priority for Process " << i + 1 << ": ";
+        cin >> proc[i].pr;
+        // processes[i].remainingTime = processes[i].burstTime;
     }
 
-    // Sort processes by priority
-    sortByPriority(processes, n);
+    // Using inbuilt sort function
 
-    // Display table headers
-    cout << "| PID\t| Arrival Time\t| Burst Time\t| Completion Time\t| Turnaround Time\t| Response Time\t| Waiting Time\t|" << endl;
-    cout << "--------------------------------------------------------------------------------------------" << endl;
+    sort(proc, proc + totalprocess, comp);
 
-    // Run preemptive priority scheduling algorithm
-    preemptivePriorityScheduling(processes, n);
+    // Calling function findgc for finding Gantt Chart
+
+    findgc();
 
     return 0;
 }
