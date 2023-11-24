@@ -82,16 +82,21 @@ int main()
     cout << "Enter the number of resources: ";
     cin >> numResources;
     int **max = new int *[numProcesses];
+
     for (int i = 0; i < numProcesses; ++i)
     {
         max[i] = new int[numResources];
     }
+
     int **allocation = new int *[numProcesses];
+
     for (int i = 0; i < numProcesses; ++i)
     {
         allocation[i] = new int[numResources];
     }
+
     int *available = new int[numResources];
+
     cout << "Enter the Maximum Resource Needs Matrix:\n";
     for (int i = 0; i < numProcesses; ++i)
     {
@@ -101,6 +106,7 @@ int main()
             cin >> max[i][j];
         }
     }
+
     cout << "Enter the Allocation Matrix:\n";
     for (int i = 0; i < numProcesses; ++i)
     {
@@ -110,13 +116,16 @@ int main()
             cin >> allocation[i][j];
         }
     }
+
     cout << "Enter the Available Resources Vector:\n";
     for (int i = 0; i < numResources; ++i)
     {
         cout << "Available[" << i << "]: ";
         cin >> available[i];
     }
+
     bankersAlgorithm(max, allocation, available, numProcesses, numResources);
+
     for (int i = 0; i < numProcesses; ++i)
     {
         delete[] max[i];

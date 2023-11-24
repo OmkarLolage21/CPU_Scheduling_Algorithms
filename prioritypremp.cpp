@@ -89,10 +89,6 @@ void findgc()
 
 int main()
 {
-    int arrivaltime[] = {1, 2, 3, 4, 5};
-    int bursttime[] = {3, 5, 1, 7, 4};
-    int priority[] = {3, 4, 1, 7, 8};
-
     for (int i = 0; i < totalprocess; i++)
     {
         proc[i].pno = i + 1;
@@ -102,14 +98,9 @@ int main()
         cin >> proc[i].bt;
         cout << "Enter priority for Process " << i + 1 << ": ";
         cin >> proc[i].pr;
-        // processes[i].remainingTime = processes[i].burstTime;
     }
 
-    // Using inbuilt sort function
-
     sort(proc, proc + totalprocess, comp);
-
-    // Calling function findgc for finding Gantt Chart
 
     findgc();
 
