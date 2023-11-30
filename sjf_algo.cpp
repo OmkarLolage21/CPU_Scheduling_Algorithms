@@ -1,6 +1,7 @@
 #include <iostream>
 #include <limits.h>
 using namespace std;
+
 struct Process
 {
     int id;
@@ -11,6 +12,7 @@ struct Process
     int tat;
     int wat;
 };
+
 void sortProcessesByArrivalTime(Process processes[], int n)
 {
     for (int i = 0; i < n - 1; i++)
@@ -24,6 +26,7 @@ void sortProcessesByArrivalTime(Process processes[], int n)
         }
     }
 }
+
 int main()
 {
     int n;

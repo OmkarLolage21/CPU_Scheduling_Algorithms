@@ -62,19 +62,20 @@ void Process::sort(Process *p, int n)
         {
             if (p[j].at > p[j + 1].at)
             {
-                int temp;
-                // sorting burst times
-                temp = p[j].bt;
-                p[j].bt = p[j + 1].bt;
-                p[j + 1].bt = temp;
-                // sorting arrival times
-                temp = p[j].at;
-                p[j].at = p[j + 1].at;
-                p[j + 1].at = temp;
-                // sorting their respective IDs
-                temp = p[j].id;
-                p[j].id = p[j + 1].id;
-                p[j + 1].id = temp;
+                // int temp;
+                // // sorting burst times
+                // temp = p[j].bt;
+                // p[j].bt = p[j + 1].bt;
+                // p[j + 1].bt = temp;
+                // // sorting arrival times
+                // temp = p[j].at;
+                // p[j].at = p[j + 1].at;
+                // p[j + 1].at = temp;
+                // // sorting their respective IDs
+                // temp = p[j].id;
+                // p[j].id = p[j + 1].id;
+                // p[j + 1].id = temp;
+                swap(p[j], p[j + 1]);
             }
         }
     }
