@@ -1,139 +1,89 @@
 #include <iostream>
-using namespace std;
+#include <vector>
+#include <unordered_set>
+#include <queue>
 
-bool isSafe(int process, int **max, int **allocation, int *available, int *work, bool *finish,
-            int numResources)
+class Graph
 {
-    for (int i = 0; i < numResources; ++i)
+public:
+    Graph(int numNodes) : numNodes(numNodes)
     {
-        if (max[process][i] - allocation[process][i] > work[i])
+        adjacencyMatrix.resize(numNodes, std::vector<int>(numNodes, 0));
+    }
+
+    void addEdge(int from, int to)
+    {
+        adjacencyMatrix[from][to] = 1;
+    }
+
+    bool isCyclicUtil(int v, std::vector<bool> &visited, std::vector<bool> &recStack)
+    {
+        if (!visited[v])
         {
-            return false;
-        }
-    }
+            visited[v] = true;
+            recStack[v] = true;
 
-    return true;
-}
-void bankersAlgorithm(int **max, int **allocation, int *available, int numProcesses, int numResources)
-{
-    int *work = new int[numResources];
-    bool *finish = new bool[numProcesses];
-    int *safeSequence = new int[numProcesses];
-    int safeSequenceIndex = 0;
-    bool deadlockDetected = false;
-
-    for (int i = 0; i < numResources; ++i)
-    {
-        work[i] = available[i];
-    }
-
-    for (int i = 0; i < numProcesses; ++i)
-    {
-        finish[i] = false;
-    }
-
-    for (int k = 0; k < numProcesses; ++k)
-    {
-        for (int i = 0; i < numProcesses; ++i)
-        {
-            if (!finish[i] && isSafe(i, max, allocation, available, work, finish, numResources))
+            for (int i = 0; i < numNodes; ++i)
             {
-                for (int j = 0; j < numResources; ++j)
+                if (adjacencyMatrix[v][i] == 1)
                 {
-                    work[j] += allocation[i][j];
+                    if (!visited[i] && isCyclicUtil(i, visited, recStack))
+                        return true;
+                    else if (recStack[i])
+                        return true;
                 }
-                finish[i] = true;
-                safeSequence[safeSequenceIndex++] = i;
-                break;
             }
         }
+
+        recStack[v] = false;
+        return false;
     }
-    for (int i = 0; i < numProcesses; ++i)
+
+    bool isCyclic()
     {
-        if (!finish[i])
+        std::vector<bool> visited(numNodes, false);
+        std::vector<bool> recStack(numNodes, false);
+
+        for (int i = 0; i < numNodes; ++i)
         {
-            deadlockDetected = true;
-            break;
+            if (isCyclicUtil(i, visited, recStack))
+                return true;
         }
+
+        return false;
     }
-    if (deadlockDetected)
-    {
-        cout << "Deadlock Detected! System is in an unsafe state.\n";
-    }
-    else
-    {
-        cout << "System is in a safe state.\nSafe Sequence: ";
-        for (int i = 0; i < numProcesses; ++i)
-        {
-            cout << "P" << safeSequence[i] << " ";
-        }
-        cout << endl;
-    }
-    delete[] work;
-    delete[] finish;
-    delete[] safeSequence;
-}
+
+private:
+    int numNodes;
+    std::vector<std::vector<int>> adjacencyMatrix;
+};
 
 int main()
 {
     int numProcesses, numResources;
-    cout << "Enter the number of processes: ";
-    cin >> numProcesses;
-    cout << "Enter the number of resources: ";
-    cin >> numResources;
-    int **max = new int *[numProcesses];
 
+    std::cout << "Enter the number of processes: ";
+    std::cin >> numProcesses;
+
+    std::cout << "Enter the number of resources: ";
+    std::cin >> numResources;
+
+    Graph graph(numProcesses + numResources);
+
+    // Add edges to the graph based on resource allocation
     for (int i = 0; i < numProcesses; ++i)
     {
-        max[i] = new int[numResources];
+        int process, resource;
+        std::cout << "Enter the process and resource for allocation (0-indexed): ";
+        std::cin >> process >> resource;
+
+        graph.addEdge(process, numProcesses + resource);
     }
 
-    int **allocation = new int *[numProcesses];
-
-    for (int i = 0; i < numProcesses; ++i)
-    {
-        allocation[i] = new int[numResources];
-    }
-
-    int *available = new int[numResources];
-
-    cout << "Enter the Maximum Resource Needs Matrix:\n";
-    for (int i = 0; i < numProcesses; ++i)
-    {
-        for (int j = 0; j < numResources; ++j)
-        {
-            cout << "Max[" << i << "][" << j << "]: ";
-            cin >> max[i][j];
-        }
-    }
-
-    cout << "Enter the Allocation Matrix:\n";
-    for (int i = 0; i < numProcesses; ++i)
-    {
-        for (int j = 0; j < numResources; ++j)
-        {
-            cout << "Allocation[" << i << "][" << j << "]: ";
-            cin >> allocation[i][j];
-        }
-    }
-
-    cout << "Enter the Available Resources Vector:\n";
-    for (int i = 0; i < numResources; ++i)
-    {
-        cout << "Available[" << i << "]: ";
-        cin >> available[i];
-    }
-
-    bankersAlgorithm(max, allocation, available, numProcesses, numResources);
-
-    for (int i = 0; i < numProcesses; ++i)
-    {
-        delete[] max[i];
-        delete[] allocation[i];
-    }
-    delete[] max;
-    delete[] allocation;
-    delete[] available;
+    if (graph.isCyclic())
+        std::cout << "Deadlock detected!" << std::endl;
+    else
+        std::cout << "No deadlock detected." << std::endl;
 
     return 0;
 }

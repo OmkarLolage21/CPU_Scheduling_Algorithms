@@ -1,108 +1,169 @@
 #include <iostream>
 #include <algorithm>
-#include <limits.h>
 using namespace std;
 
-#define totalprocess 5
-
-struct process
+struct Process
 {
-    int at, bt, pr, pno;
+    int processID;
+    int burstTime;
+    int tempburstTime;
+    int responsetime;
+    int arrivalTime;
+    int priority;
+    int outtime;
+    int intime;
 };
 
-process proc[50];
-
-bool comp(process a, process b)
+void insert(Process Heap[], Process value, int *heapsize, int *currentTime)
 {
-    if (a.at == b.at)
+    int start = *heapsize, i;
+    Heap[*heapsize] = value;
+    if (Heap[*heapsize].intime == -1)
+        Heap[*heapsize].intime = *currentTime;
+    ++(*heapsize);
+
+    while (start != 0 && Heap[(start - 1) / 2].priority > Heap[start].priority)
     {
-        return a.pr < b.pr;
-    }
-    else
-    {
-        return a.at < b.at;
+        Process temp = Heap[(start - 1) / 2];
+        Heap[(start - 1) / 2] = Heap[start];
+        Heap[start] = temp;
+        start = (start - 1) / 2;
     }
 }
-void get_wt_time(int wt[])
+
+void order(Process Heap[], int *heapsize, int start)
 {
-    int service[50];
-    service[0] = proc[0].at;
-    wt[0] = 0;
+    int smallest = start;
+    int left = 2 * start + 1;
+    int right = 2 * start + 2;
+    if (left < *heapsize && Heap[left].priority < Heap[smallest].priority)
+        smallest = left;
+    if (right < *heapsize && Heap[right].priority < Heap[smallest].priority)
+        smallest = right;
 
-    for (int i = 1; i < totalprocess; i++)
+    if (smallest != start)
     {
-        service[i] = proc[i - 1].bt + service[i - 1];
+        Process temp = Heap[smallest];
+        Heap[smallest] = Heap[start];
+        Heap[start] = temp;
+        order(Heap, heapsize, smallest);
+    }
+}
 
-        wt[i] = service[i] - proc[i].at;
+Process extractminimum(Process Heap[], int *heapsize, int *currentTime)
+{
+    Process min = Heap[0];
+    if (min.responsetime == -1)
+        min.responsetime = *currentTime - min.arrivalTime;
+    --(*heapsize);
+    if (*heapsize >= 1)
+    {
+        Heap[0] = Heap[*heapsize];
+        order(Heap, heapsize, 0);
+    }
+    return min;
+}
 
-        if (wt[i] < 0)
+bool compare(Process p1, Process p2)
+{
+    return (p1.arrivalTime < p2.arrivalTime);
+}
+
+void scheduling(Process Heap[], Process array[], int n, int *heapsize, int *currentTime)
+{
+    if (*heapsize == 0)
+        return;
+
+    Process min = extractminimum(Heap, heapsize, currentTime);
+    min.outtime = *currentTime + 1;
+    --min.burstTime;
+    cout << "Process ID = " << min.processID << " Current Time = " << *currentTime << "\n";
+
+    if (min.burstTime > 0)
+    {
+        insert(Heap, min, heapsize, currentTime);
+        return;
+    }
+
+    for (int i = 0; i < n; i++)
+        if (array[i].processID == min.processID)
         {
-            wt[i] = 0;
+            array[i] = min;
+            break;
         }
-    }
 }
 
-void get_tat_time(int tat[], int wt[])
+void priority(Process array[], int n)
 {
+    sort(array, array + n, compare);
 
-    for (int i = 0; i < totalprocess; i++)
+    int totalwaitingtime = 0, totalturnaroundtime = 0, totalbursttime = 0, i, insertedprocess = 0, heapsize = 0, currentTime = array[0].arrivalTime, totalresponsetime = 0;
+
+    Process Heap[4 * n];
+
+    for (int i = 0; i < n; i++)
     {
-        tat[i] = proc[i].bt + wt[i];
-    }
-}
-
-void findgc()
-{
-    int wt[50], tat[50];
-
-    double wavg = 0, tavg = 0;
-
-    get_wt_time(wt);
-    get_tat_time(tat, wt);
-
-    int stime[50], ctime[50];
-
-    stime[0] = proc[0].at;
-    ctime[0] = stime[0] + tat[0];
-
-    for (int i = 1; i < totalprocess; i++)
-    {
-        stime[i] = ctime[i - 1];
-        ctime[i] = stime[i] + tat[i] - wt[i];
+        totalbursttime += array[i].burstTime;
+        array[i].tempburstTime = array[i].burstTime;
     }
 
-    cout << "Process_no\tArrival\t\tBurst\t  Complete_time\tTurn_Around_Time\tWaiting_Time\t\tPriority" << endl;
-
-    for (int i = 0; i < totalprocess; i++)
+    do
     {
-        wavg += wt[i];
-        tavg += tat[i];
+        if (insertedprocess != n)
+        {
+            for (i = 0; i < n; i++)
+            {
+                if (array[i].arrivalTime == currentTime)
+                {
+                    ++insertedprocess;
+                    array[i].intime = -1;
+                    array[i].responsetime = -1;
+                    insert(Heap, array[i], &heapsize, &currentTime);
+                }
+            }
+        }
+        scheduling(Heap, array, n, &heapsize, &currentTime);
+        ++currentTime;
+        if (heapsize == 0 && insertedprocess == n)
+            break;
+    } while (1);
 
-        cout << proc[i].pno << "\t\t" << proc[i].at << "\t\t" << proc[i].bt << "\t\t" << ctime[i] << "\t\t" << tat[i] << "\t\t\t" << wt[i] << "\t\t\t" << proc[i].pr << endl;
+    for (int i = 0; i < n; i++)
+    {
+        totalresponsetime += array[i].responsetime;
+        totalwaitingtime += (array[i].outtime - array[i].intime - array[i].tempburstTime);
+        totalturnaroundtime += (array[i].outtime - array[i].intime);
     }
 
-    cout << "Average waiting time is : ";
-    cout << wavg / (float)totalprocess << endl;
-    cout << "average turnaround time : ";
-    cout << tavg / (float)totalprocess << endl;
+    cout << "\nProcess\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time\n";
+    for (int i = 0; i < n; i++)
+    {
+        cout << array[i].processID << "\t\t" << array[i].arrivalTime << "\t\t" << array[i].tempburstTime << "\t\t"
+             << array[i].outtime << "\t\t" << (array[i].outtime - array[i].intime) << "\t\t"
+             << (array[i].outtime - array[i].intime - array[i].tempburstTime) << endl;
+    }
+
+    cout << "\nAverage Waiting Time = " << (float)totalwaitingtime / n << endl;
+    cout << "Average Turnaround Time = " << (float)totalturnaroundtime / n << endl;
+    cout << "Average Response Time = " << (float)totalresponsetime / n << endl;
 }
 
 int main()
 {
-    for (int i = 0; i < totalprocess; i++)
+    int n, i;
+    cout << "Enter the number of processes: ";
+    cin >> n;
+
+    Process a[n];
+    cout << "Enter process details (arrivalTime, burstTime, priority) for each process:\n";
+    for (i = 0; i < n; ++i)
     {
-        proc[i].pno = i + 1;
-        cout << "Enter arrival time for Process " << i + 1 << ": ";
-        cin >> proc[i].at;
-        cout << "Enter burst time for Process " << i + 1 << ": ";
-        cin >> proc[i].bt;
-        cout << "Enter priority for Process " << i + 1 << ": ";
-        cin >> proc[i].pr;
+        cout << "Process " << i + 1 << ": ";
+        a[i].processID = i + 1;
+        cin >> a[i].arrivalTime >> a[i].burstTime >> a[i].priority;
     }
 
-    sort(proc, proc + totalprocess, comp);
-
-    findgc();
+    priority(a, n);
 
     return 0;
 }

@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <limits.h>
 using namespace std;
 
 int FCFS(int reqNum, int head, int *req);
@@ -79,60 +80,39 @@ int FCFS(int reqNum, int head, int *req)
 }
 int SSTF(int reqNum, int head, int *req)
 {
-
-    int seekTime = 0, minDiff = INT32_MAX, minIndex;
-    cout << "\n Current Head   Next Track   Tracks Traversed" << endl;
-    int n = sizeof(req) / sizeof(req[0]);
+    int seekTime = 0, minDiff = INT_MAX, minIndex = -1;
     sort(req, req + reqNum);
-    for (int i = 0; i < reqNum; i++)
+    int n = sizeof(req) / sizeof(req[0]);
+    cout << "Current Track"
+         << "\t"
+         << "Next Track"
+         << "Tracks Traversed\n";
+    sort(req, req + reqNum);
+    while (reqNum > 0)
     {
-        if (abs(head - req[i]) < minDiff)
+        int minDiff = INT_MAX;
+        int minIndex = -1;
+
+        for (int i = 0; i < reqNum; i++)
         {
-            minDiff = abs(head - req[i]);
-            minIndex = i;
+            int diff = abs(head - req[i]);
+            if (diff < minDiff)
+            {
+                minDiff = diff;
+                minIndex = i;
+            }
         }
+        cout << "\n     " << head << " \t\t " << req[minIndex] << " \t\t " << minDiff;
+        seekTime += minDiff;
+        head = req[minIndex];
+        for (int i = minIndex; i < reqNum - 1; i++)
+        {
+            req[i] = req[i + 1];
+        }
+
+        reqNum--;
     }
-    if (req[minIndex] < head)
-    {
-
-        cout << "\n     " << head << " \t\t " << req[minIndex] << " \t\t " << abs(head - req[minIndex]);
-        seekTime += abs(head - req[minIndex]);
-        for (int j = minIndex; j > 0; j--)
-        {
-            cout << "\n     " << req[j] << " \t\t " << req[j - 1] << " \t\t " << abs(req[j] - req[j - 1]);
-            seekTime += abs(req[j] - req[j - 1]);
-        }
-
-        cout << "\n     " << req[0] << " \t\t " << req[minIndex + 1] << " \t\t " << abs(req[0] - req[minIndex + 1]);
-        seekTime += abs(req[0] - req[minIndex + 1]);
-        for (int k = minIndex + 1; k < reqNum - 1; k++)
-        {
-            cout << "\n     " << req[k] << " \t\t " << req[k + 1] << " \t\t " << abs(req[k] - req[k + 1]);
-            seekTime += abs(req[k] - req[k + 1]);
-        }
-    }
-    else
-    {
-        cout << "\n     " << head << " \t\t " << req[minIndex] << " \t\t " << abs(head - req[minIndex]);
-        seekTime += abs(head - req[minIndex]);
-        for (int k = minIndex; k < reqNum - 1; k++)
-        {
-            cout << "\n     " << req[k] << " \t\t " << req[k + 1] << " \t\t " << abs(req[k] - req[k + 1]);
-            seekTime += abs(req[k] - req[k + 1]);
-        }
-
-        cout << "\n     " << req[reqNum - 1] << " \t\t " << req[minIndex - 1] << " \t\t " << abs(req[reqNum - 1] - req[minIndex - 1]);
-        seekTime += abs(req[reqNum - 1] - req[minIndex - 1]);
-        for (int j = minIndex; j > 1; j--)
-        {
-            cout << "\n     " << req[j] << " \t\t " << req[j - 1] << " \t\t " << abs(req[j] - req[j - 1]);
-            seekTime += abs(req[j] - req[j - 1]);
-        }
-    }
-
-    cout << "\nThe Seek Distance for selected algorithm is: " << seekTime;
-    cout << "\nThe Average Seek Distance for selected algorithm is: " << seekTime / reqNum;
-    return seekTime;
+    cout << "\nTotal seek operations performed : " << seekTime << endl;
 }
 int SCAN(int reqNum, int head, int *req)
 {
